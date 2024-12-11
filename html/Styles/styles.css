@@ -1,0 +1,92 @@
+/* Basic styling */
+body {
+    background-color:antiquewhite;
+    color: black;
+    font-family: 'Times New Roman', Times, serif;
+    margin: 0;
+    align-items: center;
+}
+
+h1 {
+    color:rgb(84, 42, 22);
+    font-family:fantasy;
+}
+h2,h3,h4,h5,h6{
+    color:rgb(84, 42, 22);
+    font-family:Georgia, 'Times New Roman', Times, serif;
+}
+.navbar {
+    background-color:rgb(99, 61, 34); /* Darker color for navbar */
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1; /* Ensure it sits on top of other content */
+    transition: top 0.3s; /* Smooth transition for hiding */
+}
+
+/* When navbar is hidden, move it above the page */
+.navbar.hidden {
+    top: -80px; /* Move the navbar out of view */
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    background-color:rgb(99, 61, 34);
+    width: 150px;
+    height: 100%;
+    left: 0;
+    padding: 15px;
+    position: fixed;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/* Main Content Styling */
+.main-content {
+    margin-left: 170px;
+    padding: 20px;
+    padding-top: 80px; /* Space for the navbar */
+}
+
+/* Centering content and images */
+.centered-content {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.centered-content img {
+    display: block;
+    margin: 0 auto;
+}

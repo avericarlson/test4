@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Falling Shapes Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000; /* Black background */
+      font-family: Arial, sans-serif;
+      flex-direction: column; /* Align elements vertically */
+    }
+
+    canvas {
+      margin-top: 50px; /* Moves the canvas down */
+      background-color: #000; /* Black background for the canvas */
+      border: 2px solid #00796b;
+      border-radius: 10px;
+    }
+
+    .info {
+      position: absolute;
+      top: 20px;
+      font-size: 18px;
+      color: #ffffff; /* White text for visibility */
+    }
+
+    .score, .lives, .level {
+      margin-bottom: 10px;
+    }
+
+    .start-btn {
+      padding: 10px 20px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .start-btn:hover {
+      background-color: #004d40;
+    }
+
+    .high-score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 18px;
+      color: #ffffff;
+    }
+
+    .back-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #00796b;
+      font-size: 18px;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="gameCanvas" width="500" height="600"></canvas>
+
+  <div class="info">
+    <div class="score">Score: <span id="score">0</span></div>
+    <div class="lives">Lives: <span id="lives">3</span></div>
+    <div class="level">Level: <span id="level">1</span></div>
+    <button class="start-btn" id="startButton">Start Game</button>
+  </div>
+
+  <div class="high-score">High Score: <span id="highScore">0</span></div>
+
+  <a href="scratch.html" class="back-link">Back to Page</a>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
+    const livesDisplay = document.getElementById('lives');
+    const levelDisplay = document.getElementById('level');
+    const highScoreDisplay = document.getElementById('highScore');
+    const startButton = document.getElementById('startButton');
+
+    let score = 0;
+    let lives = 3;
+    let level = 1;
+    let gameOver = false;
+    let basketX = canvas.width / 2 - 60;
+    const basketWidth = 120;
+    const basketHeight = 20;
+    const fallingObjects = [];
+    let objectSpeed = 2; // Faster falling speed initially
+    let basketSpeed = 30;
+    let gameInterval;
+    let fallFrequency = 0.01;
+
+    let highScore = localStorage.getItem('highScore') || 0;
+    highScoreDisplay.textContent = highScore;
+
+    const basket = {
+      width: basketWidth,
+      height: basketHeight,
+      x: basketX,
+      speed: basketSpeed,
+    };
+
+    function FallingObject() {
+      this.x = Math.random() * (canvas.width - 40);
+      this.y = -40;
+      this.size = 50;
+      this.speed = objectSpeed;
+      this.color = getRandomColor();
+      this.shape = getRandomShape();
+    }
+
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function getRandomShape() {
+      const shapes = ['circle', 'square', 'triangle'];
+      return shapes[Math.floor(Math.random() * shapes.length)];
+    }
+
+    function startGame() {
+      score = 0;
+      lives = 3;
+      level = 1;
+      objectSpeed = 2; // Reset object speed
+      fallFrequency = 0.01; 
+      gameOver = false;
+      fallingObjects.length = 0;
+      basket.x = canvas.width / 2 - basket.width / 2;
+      scoreDisplay.textContent = score;
+      livesDisplay.textContent = lives;
+      levelDisplay.textContent = level;
+      startButton.style.display = 'none';
+      gameInterval = setInterval(gameLoop, 20);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#00796b';
+      ctx.fillRect(basket.x, canvas.height - basket.height, basket.width, basket.height);
+
+      if (Math.random() < fallFrequency) {
+        fallingObjects.push(new FallingObject());
+      }
+
+      fallingObjects.forEach((obj, index) => {
+        obj.y += obj.speed;
+
+        if (obj.y + obj.size >= canvas.height - basket.height &&
+          obj.x + obj.size > basket.x && obj.x < basket.x + basket.width) {
+          fallingObjects.splice(index, 1);
+          score++;
+          scoreDisplay.textContent = score;
+
+          if (score % 10 === 0) {
+            level++;
+            objectSpeed += 0.5;
+            fallFrequency = Math.max(0.005, 0.01 - level * 0.001);
+            levelDisplay.textContent = level;
+          }
+        }
+
+        if (obj.y > canvas.height) {
+          fallingObjects.splice(index, 1);
+          lives--;
+          livesDisplay.textContent = lives;
+          if (lives <= 0) {
+            gameOver = true;
+            clearInterval(gameInterval);
+            alert('Game Over! Final Score: ' + score);
+            if (score > highScore) {
+              highScore = score;
+              localStorage.setItem('highScore', highScore);
+              highScoreDisplay.textContent = highScore;
+            }
+            setTimeout(() => {
+              startButton.style.display = 'inline-block';
+              startButton.textContent = 'Restart Game';
+            }, 1000);
+          }
+        }
+
+        ctx.fillStyle = obj.color;
+        drawShape(obj);
+      });
+
+      if (gameOver) {
+        clearInterval(gameInterval);
+      }
+    }
+
+    function drawShape(obj) {
+      ctx.beginPath();
+      if (obj.shape === 'circle') {
+        ctx.arc(obj.x + obj.size / 2, obj.y + obj.size / 2, obj.size / 2, 0, Math.PI * 2);
+      } else if (obj.shape === 'square') {
+        ctx.rect(obj.x, obj.y, obj.size, obj.size);
+      } else if (obj.shape === 'triangle') {
+        ctx.moveTo(obj.x, obj.y + obj.size);
+        ctx.lineTo(obj.x + obj.size / 2, obj.y);
+        ctx.lineTo(obj.x + obj.size, obj.y + obj.size);
+        ctx.closePath();
+      }
+      ctx.fill();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && basket.x > 0) {
+        basket.x -= basket.speed;
+      } else if (e.key === 'ArrowRight' && basket.x + basket.width < canvas.width) {
+        basket.x += basket.speed;
+      }
+    });
+
+    startButton.addEventListener('click', () => {
+      if (gameOver) {
+        startGame();
+      } else {
+        startGame();
+      }
+    });
+
+  </script>
+
+</body>
+</html>
